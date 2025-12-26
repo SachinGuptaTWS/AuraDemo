@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "d733c468-ff5b-4e56-984a-079112010e3d",
+    "createdAt": "2025-12-26T17:14:44.373Z",
+    "name": "Sachin Gupta",
+    "role": "Sales Engineer",
+    "description": "As a Sales Engineer specializing in AI product SaaS demonstrations, my role involves seamlessly bridging the gap between technical intricacies and customer needs. I excel in delivering compelling and informative product demos that highlight the unique value propositions of our AI solutions. By leveraging a deep understanding of both the technical and commercial aspects of our offerings, I effectively communicate complex features in a clear, relatable manner. My goal is to ensure prospective clients fully grasp the transformative potential of our AI products, ultimately driving engagement and facilitating the sales process. With a keen focus on customer satisfaction, I tailor each demonstration to address specific business challenges, demonstrating how our SaaS solutions can enhance operational efficiency, drive innovation, and deliver measurable results.",
+    "type": "sales",
+    "status": "active",
+    "stats": {
+      "sessions": 0,
+      "conversion": 0,
+      "avgTime": 0
+    }
+  }
+]

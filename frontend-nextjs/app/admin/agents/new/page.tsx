@@ -36,6 +36,7 @@ export default function CreateAgentPage() {
     const [selectedType, setSelectedType] = useState("sales");
     const [isLoading, setIsLoading] = useState(false);
     const [isOptimizing, setIsOptimizing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -46,6 +47,7 @@ export default function CreateAgentPage() {
     const handleOptimization = async () => {
         if (!formData.description) return;
         setIsOptimizing(true);
+        setError(null);
         try {
             const response = await fetch("/api/generate", {
                 method: "POST",
@@ -57,12 +59,24 @@ export default function CreateAgentPage() {
                 })
             });
 
+            if (!response.ok) {
+                const errText = await response.text();
+                // Try to parse JSON error if possible
+                try {
+                    const jsonErr = JSON.parse(errText);
+                    throw new Error(jsonErr.error || jsonErr.details || "Optimization failed");
+                } catch (e) {
+                    throw new Error(errText || "Optimization failed");
+                }
+            }
+
             const data = await response.json();
             if (data.optimizedPrompt) {
                 setFormData(prev => ({ ...prev, description: data.optimizedPrompt }));
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Optimization failed", error);
+            setError(error.message || "Failed to optimize prompt");
         } finally {
             setIsOptimizing(false);
         }
@@ -71,6 +85,7 @@ export default function CreateAgentPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setError(null);
 
         try {
             const response = await fetch("/api/agents", {
@@ -88,11 +103,14 @@ export default function CreateAgentPage() {
                 })
             });
 
-            if (response.ok) {
-                router.push("/admin");
+            if (!response.ok) {
+                throw new Error(`Failed to create agent: ${response.statusText}`);
             }
-        } catch (error) {
+
+            router.push("/admin");
+        } catch (error: any) {
             console.error("Failed to create agent", error);
+            setError(error.message || "Something went wrong. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -117,7 +135,13 @@ export default function CreateAgentPage() {
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm font-medium">
+                    {error}
+                </div>
+            )}
+
+            <form id="create-agent-form" onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Main Setup */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Agent Type Selection */}
@@ -266,7 +290,7 @@ export default function CreateAgentPage() {
                                 Cancel
                             </Button>
                         </Link>
-                        <Button type="submit" isLoading={isLoading} size="lg" className="h-11 px-8 shadow-lg shadow-blue-600/20">
+                        <Button type="submit" form="create-agent-form" isLoading={isLoading} size="lg" className="h-11 px-8 shadow-lg shadow-blue-600/20">
                             Create Agent
                         </Button>
                     </div>
