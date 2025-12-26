@@ -1,79 +1,49 @@
 'use client';
 
-// Admin layout with sidebar navigation
-
-import { ReactNode } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import {
-    LayoutDashboard,
-    FolderKanban,
-    Settings,
-    LogOut,
-    Sparkles
-} from 'lucide-react';
+import { Sidebar } from "@/components/admin/Sidebar";
 
 interface AdminLayoutProps {
-    children: ReactNode;
+    children: React.ReactNode;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-    const pathname = usePathname();
-
-    const navItems = [
-        { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-        { href: '/admin/projects', icon: FolderKanban, label: 'Projects' },
-        { href: '/admin/settings', icon: Settings, label: 'Settings' },
-    ];
-
     return (
-        <div className="min-h-screen bg-void-900">
-            {/* Sidebar */}
-            <aside className="fixed left-0 top-0 h-full w-64 bg-void-800 border-r border-white/10 z-40">
-                {/* Logo */}
-                <div className="p-6 border-b border-white/10">
-                    <div className="flex items-center gap-2">
-                        <Sparkles className="w-6 h-6 text-blue-500" />
-                        <span className="text-xl font-semibold">Slink</span>
-                    </div>
-                    <p className="text-xs text-zinc-500 mt-1">Admin Console</p>
-                </div>
+        <div className="min-h-screen bg-gray-50">
+            <Sidebar />
 
-                {/* Navigation */}
-                <nav className="p-4 space-y-2">
-                    {navItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+            {/* Main Content Area - responsive to sidebar */}
+            <div className="ml-20 md:ml-64 transition-all duration-300">
+                {/* Header */}
+                <header className="sticky top-0 z-40 h-16 border-b border-gray-200 bg-white shadow-sm">
+                    <div className="h-full px-8 flex items-center justify-between max-w-[1600px]">
+                        {/* Breadcrumbs */}
+                        <div className="flex items-center gap-2 text-sm">
+                            <span className="text-gray-500 font-medium">Admin</span>
+                        </div>
 
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                    ? 'bg-blue-500/10 text-blue-500'
-                                    : 'text-zinc-400 hover:bg-white/5 hover:text-white'
-                                    }`}
+                        {/* Global Actions */}
+                        <div className="flex items-center gap-6">
+                            <a
+                                href="#"
+                                className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
                             >
-                                <Icon className="w-5 h-5" />
-                                <span className="font-medium">{item.label}</span>
-                            </Link>
-                        );
-                    })}
-                </nav>
+                                Documentation
+                            </a>
+                            <a
+                                href="#"
+                                className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                            >
+                                Support
+                            </a>
+                        </div>
+                    </div>
+                </header>
 
-                {/* Bottom Section */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
-                    <button className="flex items-center gap-3 px-4 py-3 w-full text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-medium">Logout</span>
-                    </button>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="ml-64 min-h-screen">
-                {children}
-            </main>
+                {/* Page Content */}
+                <main className="p-8 max-w-[1600px]">
+                    {children}
+                </main>
+            </div>
         </div>
     );
 }

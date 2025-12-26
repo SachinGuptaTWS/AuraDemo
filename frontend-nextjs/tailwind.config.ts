@@ -52,6 +52,25 @@ const config: Config = {
                     surface: 'rgba(9, 9, 11, 0.7)',   // Legacy
                     border: 'rgba(255, 255, 255, 0.08)',
                     highlight: 'rgba(255, 255, 255, 0.03)',
+                },
+
+                // ADMIN DASHBOARD (Professional White Theme)
+                admin: {
+                    bg: '#F9FAFB',       // Gray 50 - Light background
+                    panel: '#FFFFFF',    // White - Sidebar/panels
+                    surface: '#FFFFFF',  // White - Cards
+                    border: '#E5E7EB',   // Gray 200 - Borders
+                    hover: '#F3F4F6',    // Gray 100 - Hover states
+                    text: '#111827',     // Gray 900 - Primary text
+                    textSecondary: '#6B7280', // Gray 500 - Secondary text
+                },
+
+                // FUNCTIONAL STATUS COLORS
+                status: {
+                    success: '#10B981', // Emerald 500 (Live/Success)
+                    warning: '#F59E0B', // Amber 500 (Training/Warning)
+                    error: '#EF4444',   // Red 500 (Failed/Error)
+                    info: '#3B82F6',    // Blue 500 (Processing/Info)
                 }
             },
             fontFamily: {
