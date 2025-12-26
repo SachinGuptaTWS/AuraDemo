@@ -1,0 +1,19 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+<title>AuraDemo Signal Glow Logo</title>
+<defs>
+<linearGradient id="aura_glow" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#60A5FA;stop-opacity:1" />
+</linearGradient>
+<filter id="blue-glow" x="-50%" y="-50%" width="200%" height="200%">
+<feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+<feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+<feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+</filter>
+</defs>
+<g filter="url(#blue-glow)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M85.6406 34.3594C93.357 42.0757 97.6909 52.5408 97.6909 63.4531C97.6909 74.3655 93.357 84.8306 85.6406 92.5469L76.2125 83.1188C81.4234 77.9079 84.3509 70.8408 84.3509 63.4531C84.3509 56.0655 81.4234 49.0045 76.2125 43.7936L85.6406 34.3594Z" fill="url(#aura_glow)"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M34.3594 85.6406C26.643 77.9243 22.3091 67.4592 22.3091 56.5469C22.3091 45.6345 26.643 35.1694 34.3594 27.4531L43.7875 36.8812C38.5766 42.0921 35.6491 49.1592 35.6491 56.5469C35.6491 63.9345 38.5766 70.9955 43.7875 76.2064L34.3594 85.6406Z" fill="url(#aura_glow)"/>
+<circle cx="60" cy="60" r="16" fill="#FFFFFF"/>
+</g>
+</svg>
