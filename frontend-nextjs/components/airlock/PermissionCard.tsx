@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff } from 'lucide-react';
-import { springConfig } from '@/lib/tokens';
+import { springConfig } from '@/utils/tokens';
 
 interface PermissionCardProps {
     onPermissionGranted: (stream: MediaStream) => void;
@@ -131,8 +131,8 @@ export default function PermissionCard({ onPermissionGranted, onPermissionDenied
                     {/* The Mic Circle with Dynamic Glow */}
                     <div
                         className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200 ${isListening
-                                ? 'border-2 border-signal-emerald'
-                                : 'border-2 border-glass-border'
+                            ? 'border-2 border-signal-emerald'
+                            : 'border-2 border-glass-border'
                             }`}
                         style={{ boxShadow }}
                     >
@@ -172,10 +172,10 @@ export default function PermissionCard({ onPermissionGranted, onPermissionDenied
                         onClick={requestMicrophoneAccess}
                         disabled={permissionState === 'requesting'}
                         className={`w-full py-3 px-6 rounded-xl font-medium tracking-tight transition-all ${permissionState === 'requesting'
-                                ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
-                                : permissionState === 'denied'
-                                    ? 'bg-signal-rose text-white hover:brightness-110'
-                                    : 'bg-signal-blue text-white hover:brightness-110'
+                            ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                            : permissionState === 'denied'
+                                ? 'bg-signal-rose text-white hover:brightness-110'
+                                : 'bg-signal-blue text-white hover:brightness-110'
                             }`}
                         whileHover={permissionState === 'idle' ? {
                             scale: 1.03,

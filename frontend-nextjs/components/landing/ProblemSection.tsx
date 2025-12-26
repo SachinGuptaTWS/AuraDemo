@@ -1,6 +1,12 @@
 "use client";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
+
+// Custom Close/X Icon
+const CloseIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+);
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -62,7 +68,7 @@ export default function ProblemSection() {
                                 className="flex items-start gap-3 sm:gap-4"
                             >
                                 <div className="mt-1 flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-red-500/20 flex items-center justify-center">
-                                    <X className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
+                                    <CloseIcon className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
                                 </div>
                                 <div>
                                     <h3 className="text-base sm:text-lg font-medium text-white mb-1 sm:mb-2">{problem.title}</h3>
@@ -108,7 +114,7 @@ export default function ProblemSection() {
                             className="mt-3 sm:mt-4 p-2.5 sm:p-3 rounded-lg bg-red-500/10 border border-red-500/20"
                         >
                             <div className="flex items-center gap-2">
-                                <X className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
+                                <CloseIcon className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
                                 <span className="text-xs sm:text-sm text-red-400 font-medium">Lead went cold</span>
                             </div>
                         </motion.div>

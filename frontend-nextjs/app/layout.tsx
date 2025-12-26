@@ -1,9 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
-import { cn } from '@/lib/utils' // We will need to create this, but for now let's just use string templates or clsx if available, or just classnames. Actually, I probably haven't created @/lib/utils yet. 
-
-// Let's stick to standard nextjs font loading first.
 
 const inter = Inter({
     subsets: ['latin'],
@@ -19,8 +16,8 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-    title: 'AzureSonik - AI-Powered Product Demos',
-    description: 'Instant product demonstrations powered by Azure OpenAI. Zero waiting, live navigation.',
+    title: 'Slink - Autonomous AI Sales Engineer | Sub-500ms Voice Latency',
+    description: 'Deploy an AI Sales Engineer that qualifies leads, runs live demos, and closes deals 24/7. WebRTC-powered voice AI with real-time computer vision.',
 }
 
 export default function RootLayout({

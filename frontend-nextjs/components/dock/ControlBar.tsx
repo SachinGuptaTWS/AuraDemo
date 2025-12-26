@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Mic, MicOff, Hand, PhoneOff } from 'lucide-react';
 import { useSessionStore } from '@/store/useSessionStore';
 import StatusOrb from './StatusOrb';
-import { springConfig } from '@/lib/tokens';
+import { springConfig } from '@/utils/tokens';
 import { useState } from 'react';
 
 interface ControlBarProps {

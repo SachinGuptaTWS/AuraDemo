@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { springConfig } from '@/lib/tokens';
+import { springConfig } from '@/utils/tokens';
 
 interface BootSequenceProps {
     onComplete: () => void;
@@ -83,8 +83,8 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
                                 className="mb-3"
                             >
                                 <span className={`${index === currentStep
-                                        ? 'text-signal-emerald'
-                                        : 'text-zinc-500'
+                                    ? 'text-signal-emerald'
+                                    : 'text-zinc-500'
                                     }`}>
                                     {index === currentStep ? displayedText : message.text}
                                     {index === currentStep && isTyping && (

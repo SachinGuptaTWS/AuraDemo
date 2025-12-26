@@ -34,7 +34,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <div className="p-6 border-b border-white/10">
                     <div className="flex items-center gap-2">
                         <Sparkles className="w-6 h-6 text-blue-500" />
-                        <span className="text-xl font-semibold">AuraDemo</span>
+                        <span className="text-xl font-semibold">Slink</span>
                     </div>
                     <p className="text-xs text-zinc-500 mt-1">Admin Console</p>
                 </div>

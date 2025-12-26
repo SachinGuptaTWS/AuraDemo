@@ -30,9 +30,10 @@ export default function MassiveFooter() {
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
+                            letterSpacing: '-0.04em'
                         }}
                     >
-                        Ready to scale?
+                        Ready to deploy?
                     </h2>
                 </motion.div>
 
@@ -98,7 +99,7 @@ export default function MassiveFooter() {
                     transition={{ duration: 0.6, delay: 0.6 }}
                     className="pt-6 sm:pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4"
                 >
-                    <p className="text-xs sm:text-sm text-zinc-500 text-center md:text-left">&copy; 2025 AuraDemo Inc. Built on Azure OpenAI.</p>
+                    <p className="text-xs sm:text-sm text-zinc-500 text-center md:text-left">&copy; 2025 Slink Inc. Built on Azure OpenAI.</p>
                     <div className="flex items-center gap-4 sm:gap-6">
                         <a href="#" className="text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors">Privacy</a>
                         <a href="#" className="text-xs sm:text-sm text-zinc-500 hover:text-white transition-colors">Terms</a>

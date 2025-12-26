@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
-    title: 'AuraDemo - Live AI Product Demonstrations',
+    title: 'Slink - Live AI Product Demonstrations',
     description: 'Experience AI-powered product demonstrations in real-time',
 };
 

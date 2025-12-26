@@ -8,7 +8,7 @@ export default function DeploymentPage() {
     const [buttonColor, setButtonColor] = useState('#3B82F6');
     const [buttonText, setButtonText] = useState('Start Live Demo');
 
-    const scriptTag = `<!-- AuraDemo Widget -->
+    const scriptTag = `<!-- Slink Widget -->
 <script>
   (function() {
     var script = document.createElement('script');

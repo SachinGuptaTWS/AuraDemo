@@ -174,7 +174,7 @@ export default function DemoPage() {
                                 Demo Complete
                             </h2>
                             <p className="text-zinc-400 mb-8">
-                                Thank you for experiencing AuraDemo
+                                Thank you for experiencing Slink
                             </p>
                             <motion.button
                                 onClick={() => actions.setState('IDLE')}

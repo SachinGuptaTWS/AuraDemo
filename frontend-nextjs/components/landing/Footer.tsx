@@ -35,7 +35,7 @@ export default function Footer() {
 
                 {/* Copyright */}
                 <div className="text-center mt-12 text-sm text-zinc-600">
-                    © 2025 AuraDemo. All rights reserved.
+                    © 2025 Slink. All rights reserved.
                 </div>
             </div>
         </footer>

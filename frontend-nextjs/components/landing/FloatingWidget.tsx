@@ -47,8 +47,8 @@ export default function StickyDemoWidget() {
                     <div className="flex items-center gap-3 px-6 py-4 bg-black/80 backdrop-blur-xl rounded-full border border-white/10 shadow-2xl">
                         {/* Status Indicator */}
                         <div className="flex items-center gap-2">
-                            <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-sm text-zinc-300 font-medium">Agent is ready</span>
+                            <span className="flex h-2 w-2 rounded-full bg-blue-500" />
+                            <span className="metadata-text text-zinc-400">Status: Online</span>
                         </div>
 
                         {/* CTA Button */}
@@ -59,7 +59,7 @@ export default function StickyDemoWidget() {
                             whileTap={{ scale: 0.95 }}
                         >
                             <Play className="w-3 h-3 fill-current" />
-                            Start Call
+                            Talk to Agent
                         </motion.button>
                     </div>
                 </motion.div>
