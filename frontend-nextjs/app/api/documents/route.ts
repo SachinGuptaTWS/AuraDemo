@@ -1,45 +1,81 @@
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/utils/db";
 import { v4 as uuidv4 } from "uuid";
-import PDFParser from "pdf2json";
 import mammoth from "mammoth";
 
-// Helper to extract text
-async function extractText(type: string, base64Content: string): Promise<string> {
+// Azure Document Intelligence Credentials
+const AZURE_ENDPOINT = "https://ocr-replace-poc.cognitiveservices.azure.com/";
+const AZURE_KEY = "29cb00b209a74fa683ba29c25c3c38f1";
+const API_VERSION = "2023-07-31"; // v3.1 supports Office files
+
+async function azureExtractText(buffer: Buffer, mimeType: string): Promise<string> {
     try {
-        // base64Content usually "data:application/pdf;base64,JVBERi..."
-        const parts = base64Content.split(',');
-        const rawBase64 = parts.length > 1 ? parts[1] : parts[0];
-        const buffer = Buffer.from(rawBase64, 'base64');
+        // 1. Submit for Analysis
+        const analyzeUrl = `${AZURE_ENDPOINT}formrecognizer/documentModels/prebuilt-read:analyze?api-version=${API_VERSION}`;
 
-        if (type.includes('pdf') || type.includes('PDF')) {
-            return new Promise((resolve, reject) => {
-                // PDFParser(context?: any, needRawText?: boolean)
-                const parser = new PDFParser(null, 1);
+        const response = await fetch(analyzeUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": mimeType,
+                "Ocp-Apim-Subscription-Key": AZURE_KEY
+            },
+            body: buffer as any // Node.js fetch supports Buffer
+        });
 
-                parser.on("pdfParser_dataError", (errData: any) => reject(errData.parserError));
+        if (!response.ok) {
+            const err = await response.text();
+            console.error("Azure Submit Error:", err);
+            // Fallback for DOCX if Azure fails (e.g. standard tier limitations)
+            if (mimeType.includes('word') || mimeType.includes('docx')) {
+                const mRes = await mammoth.extractRawText({ buffer });
+                return mRes.value;
+            }
+            throw new Error(`Azure API Failed: ${response.statusText}`);
+        }
 
-                parser.on("pdfParser_dataReady", (pdfData: any) => {
-                    // pdfData is the raw JSON, but since we enabled raw text (1), 
-                    // we can use getRawTextContent() which returns the text.
-                    const text = parser.getRawTextContent();
-                    resolve(text);
-                });
+        const operationLocation = response.headers.get("Operation-Location");
+        if (!operationLocation) throw new Error("No Operation-Location header");
 
-                parser.parseBuffer(buffer);
+        // 2. Poll for Results
+        let status = "running";
+        let result = null;
+        let attempts = 0;
+
+        while (status === "running" || status === "notStarted") {
+            if (attempts > 30) throw new Error("Azure Timeout"); // 30s max
+            await new Promise(r => setTimeout(r, 1000));
+
+            const pollRes = await fetch(operationLocation, {
+                headers: { "Ocp-Apim-Subscription-Key": AZURE_KEY }
             });
+            const pollData = await pollRes.json();
+            status = pollData.status;
+
+            if (status === "succeeded") {
+                result = pollData.analyzeResult;
+            } else if (status === "failed") {
+                throw new Error("Azure Analysis Failed");
+            }
+            attempts++;
         }
-        else if (type.includes('word') || type.includes('docx')) {
-            const result = await mammoth.extractRawText({ buffer });
-            return result.value;
+
+        // 3. Extract Text lines
+        if (result && result.content) {
+            return result.content;
         }
-        else {
-            // Assume plain text
-            return buffer.toString('utf-8');
-        }
+
+        return "";
+
     } catch (e) {
-        console.error("Extraction Failed:", e);
-        return ""; // Fallback or throw
+        console.error("Azure Extract Exception:", e);
+        // Fallback for DOCX if Azure failed
+        if (mimeType.includes('docx')) {
+            try {
+                const mRes = await mammoth.extractRawText({ buffer });
+                return mRes.value;
+            } catch (err) { console.error("Mammoth Fallback failed"); }
+        }
+        throw e;
     }
 }
 
@@ -56,35 +92,48 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { title, type, content } = body; // content is base64 for file, text for text
+        const { title, type, content } = body;
 
         let finalContent = content;
         let size = "0 KB";
 
+        // 1. Process File Uploads (REAL Extraction via Azure)
         if (type === 'file') {
-            const isPdf = title.toLowerCase().endsWith('.pdf');
-            const isDocx = title.toLowerCase().endsWith('.docx');
-            const isTxt = title.toLowerCase().endsWith('.txt');
+            const parts = content.split(',');
+            const rawBase64 = parts.length > 1 ? parts[1] : parts[0];
+            const buffer = Buffer.from(rawBase64, 'base64');
 
-            const sizeInBytes = Math.ceil((content.length * 3) / 4);
+            // Calculate Size
+            const sizeInBytes = buffer.length;
             size = sizeInBytes > 1024 * 1024
                 ? `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`
                 : `${(sizeInBytes / 1024).toFixed(1)} KB`;
 
-            // Extract Text for Knowledge Base Intelligence (REAL EXTRACTION)
-            if (isPdf) {
-                finalContent = await extractText('pdf', content);
-            } else if (isDocx) {
-                finalContent = await extractText('docx', content);
-            } else if (isTxt) {
-                finalContent = await extractText('text', content);
+            let mimeType = "application/octet-stream";
+            if (title.toLowerCase().endsWith('.pdf')) mimeType = "application/pdf";
+            else if (title.toLowerCase().endsWith('.docx')) mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            else if (title.toLowerCase().endsWith('.png')) mimeType = "image/png";
+            else if (title.toLowerCase().endsWith('.jpeg')) mimeType = "image/jpeg";
+            else if (title.toLowerCase().endsWith('.jpg')) mimeType = "image/jpeg";
+
+            // Extract Text
+            try {
+                if (title.toLowerCase().endsWith('.txt')) {
+                    finalContent = buffer.toString('utf-8');
+                } else {
+                    finalContent = await azureExtractText(buffer, mimeType);
+                }
+            } catch (err) {
+                console.error("Extraction workflow failed:", err);
+                return NextResponse.json({ error: "Failed to extract text from document via Azure." }, { status: 500 });
             }
 
             if (!finalContent || finalContent.trim().length === 0) {
-                return NextResponse.json({ error: "Could not extract text. File might be empty." }, { status: 400 });
+                return NextResponse.json({ error: "Document appears empty or unreadable." }, { status: 400 });
             }
         }
 
+        // 2. Save to Database
         const id = uuidv4();
         const query = `
       INSERT INTO knowledge_docs (id, title, type, content, size, status)
@@ -95,7 +144,7 @@ export async function POST(req: NextRequest) {
             id,
             title,
             type,
-            finalContent, // Storing EXTRACTED TEXT
+            finalContent, // STORE EXTRACTED TEXT
             size,
             'ready'
         ];
@@ -104,7 +153,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(rows[0]);
 
     } catch (error: any) {
-        console.error("Document Upload Error:", error);
-        return NextResponse.json({ error: "Failed to create doc" }, { status: 500 });
+        console.error("Upload Error:", error);
+        return NextResponse.json({ error: "Failed to upload document" }, { status: 500 });
     }
 }

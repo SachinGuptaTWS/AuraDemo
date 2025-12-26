@@ -59,7 +59,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        const body = await req.json(); // Next.js 13+ GET/DELETE body? usually via params, but can do body.
+        // query params only
         // Actually, for DELETE, standard is often params /knowledge/[docId]
         // But here I'm using body for simplicity to stay in same route file.
         // Wait, DELETE with body is sometimes ignored by some proxies/browsers.

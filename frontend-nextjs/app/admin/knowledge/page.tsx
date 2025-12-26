@@ -116,6 +116,20 @@ export default function KnowledgePage() {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this source?")) return;
+        try {
+            const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setDocs(docs.filter(d => d.id !== id));
+            } else {
+                alert("Failed to delete document");
+            }
+        } catch (e) {
+            alert("Error deleting document");
+        }
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -334,8 +348,12 @@ export default function KnowledgePage() {
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-right">
-                                            <button className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100">
-                                                <Icons.More className="w-4 h-4 rotate-90" />
+                                            <button
+                                                onClick={() => handleDelete(doc.id)}
+                                                className="text-gray-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"
+                                                title="Delete Source"
+                                            >
+                                                <Icons.Trash className="w-4 h-4" />
                                             </button>
                                         </td>
                                     </tr>
