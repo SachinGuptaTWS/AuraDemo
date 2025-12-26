@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/Textarea";
 import { useRouter } from "next/navigation";
 import { cn } from "@/utils/cn";
 
-// Professional Custom SVGs (Heroicons Solid/Outline based)
 const Icons = {
     Back: (props: any) => (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
@@ -30,12 +29,21 @@ const Icons = {
             <path fillRule="evenodd" d="M2.22 8.64a.75.75 0 01.88-.42l3.2.71 1.9-5.7a.75.75 0 011.33-.18l3 4.5 2.65-2.65a.75.75 0 111.06 1.06l-3 3a.75.75 0 01-1.06 0L9.5 6.27l-2.43 3.65a.75.75 0 01-1.14.16L4.78 8.4l-1.98-.44a.75.75 0 01-.58-.88zM4.75 16a.75.75 0 000 1.5h10.5a.75.75 0 000-1.5H4.75z" clipRule="evenodd" />
         </svg>
     ),
-    Save: (props: any) => (
+    Book: (props: any) => (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
-            <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+            <path d="M10.75 16.82A7.462 7.462 0 0115 15.5c.71 0 1.396.098 2.046.282A.75.75 0 0018 15.06v-11a.75.75 0 00-.546-.721A9.006 9.006 0 0015 3a8.963 8.963 0 00-4.25 1.065V16.82zM8.25 16.82v-12.755A8.963 8.963 0 004 3a9.006 9.006 0 00-2.454.338A.75.75 0 001 4.061v11a.75.75 0 00.954.721A7.462 7.462 0 014 15.5c1.52 0 2.922.5 4.053 1.341a.24.24 0 01.197-.02z" />
+        </svg>
+    ),
+    Plus: (props: any) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
+            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+        </svg>
+    ),
+    Sparkles: (props: any) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
+            <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM3.5 8.25a.75.75 0 01.75.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM14.25 9a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM5.56 5.56a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06L5.56 6.62a.75.75 0 010-1.06zM12.32 12.32a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06z" />
         </svg>
     )
-    // Add more as needed
 };
 
 interface Agent {
@@ -46,62 +54,54 @@ interface Agent {
     description: string;
     createdAt: string;
     status: string;
-    stats?: {
-        conversations?: number;
-        satisfaction?: string;
-        avgResponseTime?: string;
-    };
+}
+
+interface KnowledgeDoc {
+    id: string;
+    title: string;
+    type: string;
 }
 
 export default function AgentDetailPage({ params }: { params: { id: string } }) {
     const [agent, setAgent] = useState<Agent | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'overview' | 'configuration'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'knowledge' | 'configuration'>('overview');
     const [isSaving, setIsSaving] = useState(false);
+    const [isTraining, setIsTraining] = useState(false);
 
-    // Edit State
-    const [formData, setFormData] = useState({
-        name: "",
-        role: "",
-        type: "",
-        description: ""
-    });
+    // Knowledge State
+    const [attachedDocs, setAttachedDocs] = useState<KnowledgeDoc[]>([]);
+    const [allDocs, setAllDocs] = useState<KnowledgeDoc[]>([]);
+    const [selectedDocId, setSelectedDocId] = useState("");
 
+    const [formData, setFormData] = useState({ name: "", role: "", type: "", description: "" });
     const router = useRouter();
 
-    useEffect(() => {
-        const fetchAgent = async () => {
-            try {
-                const res = await fetch(`/api/agents/${params.id}`);
-                if (!res.ok) {
-                    if (res.status === 404) router.push('/admin/agents');
-                    return;
-                }
-                const data = await res.json();
-                setAgent(data);
-                setFormData({
-                    name: data.name,
-                    role: data.role,
-                    type: data.type,
-                    description: data.description
-                });
-            } catch (err) {
-                console.error("Failed to fetch agent", err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchAgent();
-    }, [params.id, router]);
+    useEffect(() => { fetchAgent(); }, [params.id]);
 
-    const handleDelete = async () => {
-        if (!confirm("Are you sure you want to delete this agent? This action cannot be undone.")) return;
-        try {
-            await fetch(`/api/agents/${params.id}`, { method: 'DELETE' });
-            router.push('/admin/agents');
-        } catch (err) {
-            alert("Failed to delete agent");
+    useEffect(() => {
+        if (activeTab === 'knowledge') {
+            fetchKnowledge();
         }
+    }, [activeTab]);
+
+    const fetchAgent = async () => {
+        try {
+            const res = await fetch(`/api/agents/${params.id}`);
+            if (!res.ok) { if (res.status === 404) router.push('/admin/agents'); return; }
+            const data = await res.json();
+            setAgent(data);
+            setFormData({ name: data.name, role: data.role, type: data.type, description: data.description });
+        } catch (err) { console.error(err); } finally { setIsLoading(false); }
+    };
+
+    const fetchKnowledge = async () => {
+        try {
+            const resAttached = await fetch(`/api/agents/${params.id}/knowledge`);
+            if (resAttached.ok) setAttachedDocs(await resAttached.json());
+            const resAll = await fetch(`/api/documents`);
+            if (resAll.ok) setAllDocs(await resAll.json());
+        } catch (e) { console.error(e); }
     };
 
     const handleUpdate = async (e: React.FormEvent) => {
@@ -113,17 +113,59 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-
             if (res.ok) {
                 const updated = await res.json();
                 setAgent(updated);
                 alert("Configuration saved successfully.");
             }
-        } catch (err) {
-            alert("Failed to save changes.");
+        } catch (err) { alert("Failed to save changes."); } finally { setIsSaving(false); }
+    };
+
+    const handleAttach = async () => {
+        if (!selectedDocId) return;
+        try {
+            await fetch(`/api/agents/${params.id}/knowledge`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ docId: selectedDocId })
+            });
+            fetchKnowledge();
+            setSelectedDocId("");
+        } catch (e) { alert("Failed to attach document"); }
+    };
+
+    const handleDetach = async (docId: string) => {
+        try {
+            await fetch(`/api/agents/${params.id}/knowledge?docId=${docId}`, { method: 'DELETE' });
+            fetchKnowledge();
+        } catch (e) { alert("Failed to detach"); }
+    };
+
+    const handleTrain = async () => {
+        if (attachedDocs.length === 0) return;
+        setIsTraining(true);
+        try {
+            const res = await fetch(`/api/agents/${params.id}/train`, { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                alert(`Training Complete!\n\n${data.summary}`);
+                fetchAgent(); // Refresh status
+            } else {
+                alert("Training failed. Please check backend logs.");
+            }
+        } catch (e) {
+            alert("Error connecting to training server.");
         } finally {
-            setIsSaving(false);
+            setIsTraining(false);
         }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm("Delete this agent?")) return;
+        try {
+            await fetch(`/api/agents/${params.id}`, { method: 'DELETE' });
+            router.push('/admin/agents');
+        } catch (err) { alert("Failed to delete agent"); }
     };
 
     if (isLoading) return <div className="p-8"><div className="w-full h-80 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" /></div>;
@@ -131,57 +173,47 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
 
     return (
         <div className="max-w-5xl mx-auto pb-20">
-            {/* Heavy Header */}
             <div className="flex flex-col mb-8 gap-6">
                 <Link href="/admin/agents" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors w-fit">
                     <Icons.Back className="w-4 h-4 mr-1.5" />
                     Back to Agents
                 </Link>
-
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-gray-200 pb-0">
                     <div className="pb-6">
                         <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">{agent.name}</h1>
                         <div className="flex items-center gap-3 text-sm text-gray-500">
                             <span className="font-semibold text-gray-700">{agent.role}</span>
                             <span className="w-1 h-1 rounded-full bg-gray-300" />
-                            <span>Deployed {new Date(agent.createdAt).toLocaleDateString()}</span>
-                            <span className="w-1 h-1 rounded-full bg-gray-300" />
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-800 uppercase tracking-wide">
+                            <span className={cn(
+                                "inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide border",
+                                agent.status === 'trained'
+                                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                                    : "bg-green-50 text-green-700 border-green-200"
+                            )}>
                                 {agent.status}
                             </span>
                         </div>
                     </div>
-
-                    {/* Heavy Tabs */}
                     <div className="flex gap-1">
-                        <button
-                            onClick={() => setActiveTab('overview')}
-                            className={cn(
-                                "px-6 py-3 text-sm font-bold border-b-2 transition-colors",
-                                activeTab === 'overview'
-                                    ? "border-blue-600 text-blue-600"
-                                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                            )}
-                        >
-                            Overview
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('configuration')}
-                            className={cn(
-                                "px-6 py-3 text-sm font-bold border-b-2 transition-colors",
-                                activeTab === 'configuration'
-                                    ? "border-blue-600 text-blue-600"
-                                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                            )}
-                        >
-                            Configuration
-                        </button>
+                        {['overview', 'knowledge', 'configuration'].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab as any)}
+                                className={cn(
+                                    "px-6 py-3 text-sm font-bold border-b-2 transition-colors capitalize",
+                                    activeTab === tab
+                                        ? "border-blue-600 text-blue-600"
+                                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                )}
+                            >
+                                {tab}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
 
-            {activeTab === 'overview' ? (
-                /* Overview Tab */
+            {activeTab === 'overview' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
                     <div className="lg:col-span-2 space-y-6">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 relative overflow-hidden">
@@ -194,7 +226,6 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                                 {agent.description}
                             </div>
                         </div>
-
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 table-auto">
                             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6 flex items-center gap-2">
                                 <Icons.Activity className="w-5 h-5 text-gray-400" />
@@ -209,49 +240,106 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                             </div>
                         </div>
                     </div>
-
                     <div className="lg:col-span-1 space-y-6">
-                        {/* Quick Actions */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Danger Zone</h3>
-                            <Button
-                                variant="outline"
-                                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 justify-start"
-                                onClick={handleDelete}
-                            >
+                            <Button variant="outline" className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 justify-start" onClick={handleDelete}>
                                 <Icons.Trash className="w-4 h-4 mr-2" />
                                 Delete Agent
                             </Button>
                         </div>
                     </div>
                 </div>
-            ) : (
-                /* Configuration Tab */
+            )}
+
+            {activeTab === 'knowledge' && (
+                <div className="max-w-3xl bg-white rounded-xl border border-gray-200 shadow-sm p-8 animate-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <Icons.Book className="w-5 h-5 text-blue-600" />
+                                Attached Knowledge
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1">{attachedDocs.length} sources attached</p>
+                        </div>
+                        <Button
+                            onClick={handleTrain}
+                            isLoading={isTraining}
+                            disabled={attachedDocs.length === 0}
+                            className="font-bold shadow-md shadow-blue-500/20"
+                        >
+                            <Icons.Sparkles className="w-4 h-4 mr-2" />
+                            {isTraining ? 'Training Model...' : 'Train Agent Model'}
+                        </Button>
+                    </div>
+
+                    {attachedDocs.length > 0 ? (
+                        <ul className="divide-y divide-gray-100 mb-8 border border-gray-100 rounded-lg overflow-hidden">
+                            {attachedDocs.map(doc => (
+                                <li key={doc.id} className="flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-50 text-blue-600 rounded border border-blue-100">
+                                            <Icons.Book className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-900">{doc.title}</p>
+                                            <p className="text-xs text-gray-500 capitalize">{doc.type}</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => handleDetach(doc.id)} className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors">
+                                        Remove
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="mb-8 p-8 text-center border-2 border-dashed border-gray-100 rounded-lg bg-gray-50/50">
+                            <p className="text-sm text-gray-500 font-medium">No knowledge sources attached yet.</p>
+                        </div>
+                    )}
+
+                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
+                        <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-4">Attach New Source</h4>
+                        <div className="flex gap-4">
+                            <select
+                                className="flex-1 h-10 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={selectedDocId}
+                                onChange={(e) => setSelectedDocId(e.target.value)}
+                            >
+                                <option value="">Select a knowledge source...</option>
+                                {allDocs.filter(d => !attachedDocs.find(ad => ad.id === d.id)).map(doc => (
+                                    <option key={doc.id} value={doc.id}>{doc.title} ({doc.type})</option>
+                                ))}
+                            </select>
+                            <Button onClick={handleAttach} disabled={!selectedDocId} variant="outline" className="font-bold border-gray-300">
+                                <Icons.Plus className="w-4 h-4 mr-2" />
+                                Attach
+                            </Button>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-3 font-medium">
+                            Only unattached sources are shown. Go to <Link href="/admin/knowledge" className="text-blue-600 hover:underline">Knowledge Base</Link> to add more.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'configuration' && (
                 <div className="max-w-2xl bg-white rounded-xl border border-gray-200 shadow-sm p-8 animate-in slide-in-from-bottom-2 duration-300">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-lg font-bold text-gray-900">Edit Configuration</h3>
                         <span className="text-sm text-gray-500">Last updated: Just now</span>
                     </div>
-
                     <form onSubmit={handleUpdate} className="space-y-6">
                         <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Agent Name</label>
-                                <Input
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="font-medium"
-                                />
+                                <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="font-medium" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Role</label>
-                                <Input
-                                    value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                />
+                                <Input value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />
                             </div>
                         </div>
-
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">Type</label>
                             <select
@@ -264,20 +352,12 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
                                 <option value="support">Customer Support</option>
                             </select>
                         </div>
-
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">System Instructions</label>
-                            <Textarea
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="h-48 font-mono text-sm leading-relaxed"
-                            />
+                            <Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="h-48 font-mono text-sm leading-relaxed" />
                         </div>
-
                         <div className="pt-4 flex items-center justify-end border-t border-gray-100">
-                            <Button type="submit" isLoading={isSaving} className="px-8 font-semibold shadow-lg shadow-blue-600/10">
-                                Save Changes
-                            </Button>
+                            <Button type="submit" isLoading={isSaving} className="px-8 font-semibold shadow-lg shadow-blue-600/10">Save Changes</Button>
                         </div>
                     </form>
                 </div>
