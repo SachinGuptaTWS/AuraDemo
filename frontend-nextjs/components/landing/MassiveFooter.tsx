@@ -71,9 +71,8 @@ export default function MassiveFooter() {
                         <ul className="space-y-2 sm:space-y-3">
                             <li><a href="#" className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors">About</a></li>
                             <li>
-                                <a href="#" className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                                <a href="#" className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors">
                                     Careers
-                                    <span className="text-[9px] sm:text-[10px] bg-blue-500/20 text-blue-400 px-1.5 sm:px-2 py-0.5 rounded-full">Hiring</span>
                                 </a>
                             </li>
                             <li><a href="#" className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors">Legal</a></li>

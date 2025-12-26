@@ -86,11 +86,24 @@ const config: Config = {
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 'breathe': 'breathe 3s ease-in-out infinite',
+                'aurora': 'aurora 15s ease-in-out infinite',
+                'aurora-delayed': 'aurora 15s ease-in-out 7.5s infinite',
+                'meteor': 'meteor 5s linear infinite',
             },
             keyframes: {
                 breathe: {
                     '0%, 100%': { transform: 'scale(1)', opacity: '0.8' },
                     '50%': { transform: 'scale(1.02)', opacity: '1' },
+                },
+                aurora: {
+                    '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+                    '33%': { transform: 'translate(30px, -30px) scale(1.1)' },
+                    '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                },
+                meteor: {
+                    '0%': { transform: 'rotate(215deg) translateX(0)', opacity: '1' },
+                    '70%': { opacity: '1' },
+                    '100%': { transform: 'rotate(215deg) translateX(-500px)', opacity: '0' },
                 },
             },
         },
