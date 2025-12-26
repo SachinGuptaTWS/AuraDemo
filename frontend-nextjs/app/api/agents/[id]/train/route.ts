@@ -10,7 +10,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     try {
         const { id } = params;
 
-        // 1. Fetch Attached Knowledge
+        // 1. Fetch Current Agent Instructions
+        const agentRes = await pool.query("SELECT description FROM agents WHERE id = $1", [id]);
+        if (agentRes.rows.length === 0) return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+        const currentInstructions = agentRes.rows[0].description || "";
+
+        // 2. Fetch Attached Knowledge (Actual Text Content)
         const query = `
             SELECT kd.title, kd.content, kd.type 
             FROM knowledge_docs kd
@@ -20,21 +25,32 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         const { rows: docs } = await pool.query(query, [id]);
 
         if (docs.length === 0) {
-            return NextResponse.json({ error: "No knowledge attached to train on." }, { status: 400 });
+            return NextResponse.json({ error: "No knowledge attached. Please attach documents first." }, { status: 400 });
         }
 
-        // 2. Prepare Context for Azure
-        const knowledgeContext = docs.map((d: any) => `Source: ${d.title} (${d.type})\nContent: ${d.content.slice(0, 2000)}...`).join("\n\n");
+        // Limit context to avoid token limits (Real world safety)
+        // We take up to 20,000 chars roughly.
+        const knowledgeContext = docs.map((d: any) => `
+        --- BEGIN SOURCE: ${d.title} (${d.type}) ---
+        ${d.content.slice(0, 10000)}
+        --- END SOURCE ---
+        `).join("\n\n");
 
-        const systemPrompt = "You are an AI Training Supervisor. Analyze the provided knowledge documents and confirm the agent configuration.";
-        const userMessage = `Please analyze the following knowledge base materials attached to this agent.
-        
+        // 3. REAL TRAINING via Prompt Engineering (System Prompt Injection)
+        const systemPrompt = "You are an Expert AI System Architect. Your job is to rewrite an AI Agent's 'System Instructions' to incorporate new knowledge.";
+        const userMessage = `
+        CURRENT SYSTEM INSTRUCTIONS:
+        ${currentInstructions}
+
+        NEW KNOWLEDGE TO INTEGRATE:
         ${knowledgeContext}
-        
-        1. Confirm the topics covered.
-        2. Provide a 1-sentence summary of what the agent is now trained on.`;
 
-        // 3. Call Azure OpenAI
+        TASK:
+        Rewrite the System Instructions to preserve the original personality/role but APPEND a specific "Knowledge Base" section containing a comprehensive summary of the new facts. 
+        The Agent must be able to answer questions based on this knowledge.
+        Return ONLY the new System Instructions text. Do not add markdown blocks like \`\`\`.
+        `;
+
         const url = `${AZURE_ENDPOINT}/openai/deployments/${DEPLOYMENT_NAME}/chat/completions?api-version=${AZURE_VERSION}`;
 
         const response = await fetch(url, {
@@ -48,8 +64,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
                     { role: "system", content: systemPrompt },
                     { role: "user", content: userMessage },
                 ],
-                temperature: 0.3,
-                max_tokens: 200,
+                temperature: 0.1, // Low temp for precision
             }),
         });
 
@@ -60,14 +75,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         }
 
         const data = await response.json();
-        const summary = data.choices[0].message.content;
+        const newInstructions = data.choices[0].message.content;
 
-        // 4. Update Agent Status to 'trained'
-        // We'll also store the summary in description or stats? Maybe just console log for now or return it.
-        // Let's explicitly set status = 'trained'
-        await pool.query("UPDATE agents SET status = 'trained' WHERE id = $1", [id]);
+        // 4. Update Agent with NEW Intelligence
+        await pool.query(
+            "UPDATE agents SET description = $1, status = 'trained' WHERE id = $2",
+            [newInstructions, id]
+        );
 
-        return NextResponse.json({ success: true, summary });
+        return NextResponse.json({
+            success: true,
+            summary: "Agent instructions have been rewritten to include the knowledge base."
+        });
 
     } catch (error: any) {
         console.error("Training Workflow Error:", error);
